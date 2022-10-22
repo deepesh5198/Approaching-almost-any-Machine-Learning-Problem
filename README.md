@@ -8,6 +8,7 @@ As the name of the book suggests, this book is about how you can approach any ma
 - [Chapter 1 - Setting up Your Working Environment](#chapter1)
 - [Chapter 2 - Supervised vs Unsupervised Learning](#chapter2)
 - [Chapter 3 - Cross Validation](#chapter3)
+- [Chapter 4 - Evaluation Metrics](#chapter4)
 
 
 <a name = "chapter1">
@@ -57,7 +58,150 @@ Just open a fresh command prompt, activate your virtual environment and type "ju
 <h1>Chapter 2 - Supervised vs Unsupervised Learning</h1>
 </a>
 
-In this chapter we will learn about types of Machine Learning Problems. There are mainly three types of ML problems:
-- Supervised Learning
+In this chapter we will learn about types of Machine Learning Problems. There are generally two types of Machine learning problems:
+- Supervised Learning 
 - Unsupervised Learning
-- Semi-supervised learning or Reinforcement Learning
+
+And there are generally two types of data:
+- **Supervised Data**: a data that always has one or multiple target variables.
+- **Unsupervised Data**: a data that does not have any target variable.
+
+So, a **Supervised Learning problem** is one where we are provided with *Supervised type of data* and are required to predict target/label for unknown samples by training a model on known samples.
+
+and similarly, an **Unsupervised Learning problem** is one where we are provided with *Unsupervised type of data* and are required to predict the target/labels for whole data using unsupervised algorithms.
+
+### Two types of Supervised Learning problems
+- **Classification Problem**: When the data has categorical target variable(s) (when target variable has finite or discrete set of values), and we are required to predict the class of unknown sample.
+
+- **Regression Problem**: When the data has target variable consisting of real values (or real numbers), and we are required to predict the target value for the unknown sample.
+
+### Classification Problem Example
+We are given a data consisting of images of cats and dogs, and the target variable is binary type (two categories cat or dog). We are then given unknown images (one without labels), our task is to classify the image if it is a cat image or dog image.
+
+### Regression Problem Example
+We are given a data of historical house prices with features like, presence of hospital, school or supermarket, distance to nearest public transport etc. The target variable of data is real valued (house prices), our task is to predict the price of a house with the help of given set of features. 
+
+### How to approach an Unsupervised Learning problem
+- **Clustering**: There are many clustering algorithms like, K-Means, DB-Scan, ART etc., which are used to deal with unsupervised data. As the name suggests, clustering algorithms takes data as input and form clusters of data which can then be labelled.
+
+- **Decomposition Method**: Decomposition methods like, Principal Component Analysis (PCA) and t-Distributed Stochastic Neighborhood Embedding (t-SNE) are used for visualizing the data in lower dimensions. For Example: with the help of PCA or t-SNE we can decompose a data with hundereds of features to 2d data and easily visualize it. Check out this blog for better undersanding of the concept, [t-SNE Explanation with MNIST dataset](https://colah.github.io/posts/2014-10-Visualizing-MNIST/).
+
+
+<a name = "chapter3">
+<h1> Chapter 3 - Cross Validation</h1>
+</a>
+
+Before we do anything, we should first check which Cross Validation method is best for our dataset, and that is done by a little bit of data exploration.
+
+but before that, What is Cross Validation?
+
+### What is Cross Validation?
+ Cross Validation is a step in model building process that ensures that our model fits the data accurately and also ensures that we do not overfit. We will come back to overfit later.
+
+ Cross Validation method depends on the dataset:
+
+ ### Types of Cross Validation
+ - hold-out based validation
+ - k-fold cross validation
+ - stratified k-fold cross validation
+ - leave-one-out cross validation
+ - group k-fold cross validation
+
+#### hold-out based validation
+In this cross validation method we divide the whole data in two parts, and train model with one part of the data and validate/test with the other part.
+
+- this cross validation method is opted when we have large amount of data.
+- the samples of each class should be almost-eqaully distributed in data, i.e, there should big class imbalance in data.
+
+#### k-fold cross validation
+In this cross validation method we create "k folds" of data, and each fold has almost-equal distribution of data, then we treat each fold as validation data and use the rest to train model (in one-vs-rest fashion) one-by-one.
+
+- this method is opted when we have small amount of data.
+- and the data should not have big class imbalance.
+
+#### stratified k-fold cross validation
+It is similar to k-fold cross validation method but it also ensures that each fold must contain the samples from the class which has less number of samples.
+
+- this method is opted when we have small amount of data.
+- and the data have big class imbalance (one class dominates the other).
+
+### Why cross validation first?
+>Cross-validation is the first and most essential step when it comes to building machine learning models. If you want to do feature engineering, split your data first. If you're going to build models, split your data first. If you have a good cross validation scheme in which validation data is representative of training and real world data, you will be able to build a good machine learning model which is highly generalizable.
+
+
+<a name = chapter4>
+<h1>Chapter 4 - Evaluation Metrics</h1>
+</a>
+
+The next step in model building process is Evaluation. In this step we use the predictions of validation data to evaluate our model's performance. And for that we apply different type of evaluation metrics. What metric to use when depends on the dataset.
+
+### Types of Evaluation Metrics
+For classification problem we use following evaluation metrics:
+- Accuracy Score
+- Precision (P)
+- Recall (R)
+- F1 Score (F1)
+- Area Under the ROC (Receiver Operating Characteristic) curve or simply Area Under the Curve (AUC)
+- Log loss
+- Precision at k (P@k)
+- Average Precision at k (AP@k)
+- Mean Average Precision at k (MAP@k)
+
+For regression problem we use following evaluation metrics:
+- Mean Absolute Error (MAE)
+- Mean Squared Error (MSE)
+- Root Mean Squared Error (RMSE)
+- Root Mean Squared Logarithmic Error (RMSLE)
+- Mean Percentage Error (MPE)
+- Mean Absolute Percentage Error (MAPE)
+- R^2 (R-Squared )
+
+Now, we will discuss each of these metrics in little detail.
+
+#### Accuracy Score
+Accuracy is the simplest of evaluation metrics.
+> Accuracy = *No. of correctly Classified points / Total number of data points* 
+
+**Example:**
+Consider a dataset with 200 images, 100 Images of X-Ray with disease (+ve), 100 Images of X-Ray witout disease (-ve)
+
+Divide the dataset into two equal sets of 100 images
+
+Training Set = (50 (+ve), 50 (-ve))
+
+Validation Set = (50 (+ve), 50 (-ve))
+
+*NOTE: When we have equal number of +ve class and -ve class datapoints we can use Accuracy Score, Precision, Recall and F1 Score as evaluation metric.*
+
+Since, we have a dataset with equal distribution of negative and positive class, we can use Accuracy score as evaluation metric.
+
+Now, suppose our model predicts the class of 90 images correctly as (-ve) class.
+
+*ACCURACY = 90(-ve class) / 100(-ve class) = 90%*
+
+We can say that our model is 90% accurate.
+
+#### Where Accuracy Score fails?
+Our Accuracy score metric fails when there is a significant imbalance in classes. To understand that let us modify the previous example a little bit.
+
+Consider a dataset with 200 images, 180 Images of X-Ray with disease (+ve), 20 Images of X-Ray witout disease (-ve)
+
+Divide the dataset into two equal sets of 100 images
+
+Training Set = (90 (+ve), 10 (-ve))
+
+Validation Set = (90 (+ve), 10 (-ve))
+
+*NOTE: Notice that we have imbalance in classes, i.e, +ve class have more data points (180) than -ve class (20).*
+
+Now, if you say, all images in our validation set are images of X-Ray with disease (+ve), what would be the Accuracy of this model?
+
+You correctly classified 90% of the images so your model's Accuracy score is 90% (But that is useless!!)
+
+*Our data was highly sqewed that is, the number of samples of one class outnumber the number of samples of the other class*
+
+**Conlusion:** When data is highly skewed i.e, there is great imbalance in the classes then it is adviced not to use Accuracy Score as evaluation metric.
+
+
+
+
