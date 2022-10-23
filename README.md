@@ -203,7 +203,7 @@ You correctly classified 90% of the images so your model's Accuracy score is 90%
 **Conlusion:** When data is highly skewed i.e, there is great imbalance in the classes then it is adviced not to use Accuracy Score as evaluation metric.
 
 #### Accuracy Score implementation in python
-``` pyhton:
+```pyhton
     def accuracy(y_pred, y_true):
         count=0
         for yp, yt in zip(y_pred, y_true):
