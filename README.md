@@ -524,3 +524,284 @@ AUC values range from 0 to 1.
 - **AUC = 1** implies you have a perfect model. Most of the time, it means that you made some mistake with validation and should revisit data processing and validation pipeline of yours. If you didn’t make any mistakes, then congratulations, you have the best model one can have for the dataset you built it on.
 - **AUC = 0** implies that your model is very bad (or very good!). Try inverting the probabilities for the predictions, for example, if your probability for the positive class is p, try substituting it with 1-p. This kind of AUC may also mean that there is some problem with your validation or data processing.
 - **AUC = 0.5** implies that your predictions are random. So, for any binary classification problem, if I predict all targets as 0.5, I will get an AUC of 0.5.
+
+
+### Log Loss
+Log loss is one of the most important evaluation matrics, because log loss penalizes quite high for an incorrect or a far-off prediction, i.e., log loss punishes you for being very sure and very wrong.
+
+In case of binary classification problem, we define log loss as:
+>*Log Loss = - 1.0 * ( target * log(prediction) + (1 - target) * log(1 - prediction) )*
+
+Where target is either 0 or 1 and prediction is a probability of a sample belonging to class 1.
+
+### Multi-class Log loss
+For multiple samples in the dataset, the log-loss over all samples is a mere average of all individual log losses. 
+>*multi-class Log Loss = - summation( target * log(prediction) + (1 - target) * log(1 - prediction) ) / n*
+
+#### Pyhton implementation for log-loss
+```python
+    # python implementation for  log loss
+    import numpy as np
+
+    def log_loss(y_true, y_proba):
+        """
+        Function to calculate log-loss
+        :param y_true: a list of true values
+        :param y_proba: a list of predicted probability values
+        
+        :return log-loss: log-loss = -1*(y_true*log(y_proba) + (1-y_true)*log(1-y_proba)) 
+        """
+        
+        #epsilon is used to clip probability values
+        epsilon = 1e-15
+        
+        loss = []
+        
+        #loop over all true and predicted probability values
+        for yt, yp in zip(y_true, y_proba):
+            
+            # clipping y_pred values
+            yp = np.clip(yp, epsilon, 1-epsilon)
+            
+            # calculating log loss
+            temp_loss = -1.0*( yt*np.log(yp) +( 1-yt )*np.log( 1-yp ) )
+            
+            # appending loss to the list
+            loss.append(temp_loss)
+            
+        #returning the mean value of the loss
+        return np.mean(loss)
+```
+
+### Metrics for Multi-Class Classification Problems
+Multi-class classification problems are those in which the target column of the data has more than two classes/categories. We deal with such problems in *One-vs-Rest* fashion.
+
+- **Macro Averaged Precision**
+- **Micro Averaged Precision**
+- **Weighted Averaged Precision**
+- **Macro Averaged Recall**
+- **Micro Averaged Recall**
+- **Weighted Averaged Recall**
+- **Weighted Averaged F1 Score**
+
+##### Implementing Macro Averaged Precision in Python
+```python
+    def macro_averaged_precision(y_true, y_pred):
+        """
+        Function to calculate macro averaged precision
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: macro precision score
+        
+        """
+        #find number of classes by taking 
+        #length of unique values in true list
+        num_classes = len(set(y_true))
+        
+        precision = 0
+        
+        for class_ in range(num_classes):
+            
+            # make all classes negative except current class
+            # this is one-vs-rest method
+            temp_true = [1 if p == class_ else 0 for p in y_true]
+            temp_pred = [1 if p == class_ else 0 for p in y_pred]
+            
+            #calculate true positive for current class
+            tp = true_positive(temp_true, temp_pred)
+            
+            #calculate false positive for current class
+            fp = false_positive(temp_true, temp_pred)
+            
+            #calculate precision for current class
+            temp_precision = tp / (tp + fp)
+            
+            #keep adding precision for all class
+            precision += temp_precision
+            
+        # taking average of precision
+        precision = precision/num_classes
+            
+        return precision
+```
+
+#### Implementing Micro Averaged Precision in Python
+```python
+    def micro_averaged_precision(y_true, y_pred):
+        """
+        Function to calculate micro averaged precision
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: micro precision score        
+        """
+        # initialize tp as 0
+        tp = 0
+        # initialize fp as 0
+        fp = 0
+        
+        # number of classes
+        num_classes = len(set(y_true))
+        
+        for class_ in range(num_classes):
+            
+            # making every class negative except the current class
+            temp_true = [1 if p == class_ else 0 for p in y_true]
+            temp_pred = [1 if p == class_ else 0 for p in y_pred]
+            
+            # calculating tp and fp
+            # and adding
+            tp += true_positive(temp_true, temp_pred)
+            fp += false_positive(temp_true, temp_pred)
+            
+        # calculating precision
+        precision = tp / (tp + fp)
+
+        # return precision        
+        return precision
+```
+
+#### Implementing Weighted Averaged Precision in Python
+```python
+    import numpy as np
+    from collections import Counter
+
+    def weighted_average_precision(y_true, y_pred):
+        """
+        Function to calculate weighted average precision
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: weighted average precision score 
+        """
+        
+        num_classes = len(set(y_true))
+        
+        # create a {class : sample_count} dictionary
+        # it looks something like this
+        # {0: 20, 1: 15, 2: 21}
+        # key = class and value = sample_count
+        class_counts = Counter(y_true)
+        
+        #initializing precision as 0
+        precision = 0
+        
+        for class_ in range(num_classes):
+            
+            # make all classes negative except current class
+            temp_true = [1 if p == class_ else 0 for p in y_true]
+            temp_pred = [1 if p == class_ else 0 for p in y_pred]
+
+            # calculate tp and fp
+            tp = true_positive(temp_true, temp_pred)
+            fp = false_positive(temp_true, temp_pred)
+            
+            temp_precision = tp / (tp + fp)
+            
+            # multiply precision with count of samples in class
+            weighted_precision = class_counts[class_]*temp_precision
+            
+            # add to overall precision
+            precision += weighted_precision
+            
+        # averaging the precision
+        overall_precision = precision / len(y_true)
+        
+        # returning the averaged precision
+        return overall_precision
+```
+#### Scikit-Learn implementation of Macro, Micro and Weighted average precision
+Scikit-learn implementation of averaged precision scores is very easy, you just have to use the "precision_score()" method and change the "average" parameter of this method to "macro", "micro" or "weighted".
+
+Below is the code for an easy implementation of Macro, Micro and Weighted average precision using scikit learn.
+
+```python
+    # scikit-learn implementation
+    from sklearn.metrics import precision_score
+
+    # Macro Averaged Precision
+    macro_averaged_precision = precision_score(y_true, y_pred, average = "macro")
+
+    # Micro Averaged Precision
+    micro_averaged_precision = precision_score(y_true, y_pred, average = "micro")
+
+    # Weighted Averaged Precision
+    weighted_averaged_precision = precision_score(y_true, y_pred, average = "weighted")
+```
+
+#### Implementation of Macro, Micro and Weighted Recall in Python
+>The python implementation for the averaged recalls is same as averaged precisions we saw above, with just one difference, instead of precision we calculate recall.
+
+#### Scikit-Learn implementation of Macro, Micro and Weighted average Recall
+Scikit-learn implementation of averaged recall scores is also very easy, you just have to use the "recall_score()" method and change the "average" parameter of this method to "macro", "micro" or "weighted".
+
+Below is the code for an easy implementation of Macro, Micro and Weighted average Recall using scikit learn.
+
+```python
+    # scikit-learn implementation
+    from sklearn.metrics import recall_score
+
+    # Macro Averaged Recall
+    macro_averaged_recall = recall_score(y_true, y_pred, average = "macro")
+
+    # Micro Averaged Recall
+    micro_averaged_recall = recall_score(y_true, y_pred, average = "micro")
+
+    # Weighted Averaged Recall
+    weighted_averaged_recall = recall_score(y_true, y_pred, average = "weighted")
+```
+
+#### Implementation of Weighted F1 Score in Python
+
+```python
+    import numpy as np
+    from collections import Counter
+
+    def weighted_average_f1score(y_true, y_pred):
+        """
+        Function to calculate weighted average f1score
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: weighted average f1 score 
+        """
+
+        # number of classes
+        num_classes = len(set(y_true))
+
+        # create class count dictionary
+        # {0:12, 1:20, 2: 13}
+        class_count = Counter(y_true)
+        
+        # initialize f1_score at 0
+        f1_score = 0
+        
+        for class_ in range(num_classes):
+            
+            # make all classes negative except the current class
+            temp_true = [1 if p == class_ else 0 for p in y_true]
+            temp_pred = [1 if p == class_ else 0 for p in y_pred]
+            
+            # calculating Recall
+            r = recall(temp_true, temp_pred)
+            
+            # calculating Precision
+            p = precision(temp_true, temp_pred)
+            
+            # checking sum of precision and recall
+            if p+r != 0:
+                temp_f1 = 2 * p * r/(p + r)
+            else:
+                temp_f1 = 0
+
+            # giving f1 score weight
+            # multiplying class count to each temp f1 score
+            weighted_f1score = class_count[class_]*temp_f1
+            
+            # adding up weigthed f1 score
+            f1_score += weighted_f1score
+            
+        # taking average of weighted f1 scores
+        overall_f1score = f1_score/ len(y_true)
+
+        # returning overall f1score
+        return overall_f1score
+```
+
