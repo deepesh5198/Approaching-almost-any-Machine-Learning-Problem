@@ -514,3 +514,13 @@ Now that we know what TPR and FPR are, we can now implement Area Under ROC or AU
     # and y_pred as arguments
     roc_auc_score(y_true, y_pred)
 ```
+```
+    # Output of above code
+    0.8300000000000001
+```
+
+#### Interpreting AUC score
+AUC values range from 0 to 1.
+- **AUC = 1** implies you have a perfect model. Most of the time, it means that you made some mistake with validation and should revisit data processing and validation pipeline of yours. If you didn’t make any mistakes, then congratulations, you have the best model one can have for the dataset you built it on.
+- **AUC = 0** implies that your model is very bad (or very good!). Try inverting the probabilities for the predictions, for example, if your probability for the positive class is p, try substituting it with 1-p. This kind of AUC may also mean that there is some problem with your validation or data processing.
+- **AUC = 0.5** implies that your predictions are random. So, for any binary classification problem, if I predict all targets as 0.5, I will get an AUC of 0.5.
