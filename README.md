@@ -501,3 +501,16 @@ Now that we know what TPR and FPR are, we can now implement Area Under ROC or AU
 ```
 #### Output of the above code
 ![Alt text](./images/roc_curve.png?raw=true "roc_curve")
+
+#### Scikit-learn implementation to get AUC score
+```python
+    # using roc_auc_score for calculating AUC score
+    # from sklearn.metrics
+    from sklearn.metrics import roc_auc_score
+    y_true = [0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1]
+    y_pred = [0.1, 0.3, 0.2, 0.6, 0.8, 0.05, 0.9, 0.5, 0.3, 0.66, 0.3, 0.2, 0.85, 0.15, 0.99]
+
+    # calling the roc_auc_score with y_true 
+    # and y_pred as arguments
+    roc_auc_score(y_true, y_pred)
+```
