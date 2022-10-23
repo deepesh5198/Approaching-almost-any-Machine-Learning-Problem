@@ -25,7 +25,7 @@ Just go to [Download Python](https://www.python.org/downloads/) page, and downlo
 Thats it!, now you have Python in your system.
 You can open command prompt and type, "python or py" and hit enter, to check if it has installed or not. If it is installed you will see something like this.
 
-![Alt text](https://i.stack.imgur.com/K5kSC.png "check python")
+![Alt text](./images/check_python.png?web=raw "check python")
 
 
 Now that we have installed python in our system, its time to set up a Virtual Environment.
@@ -40,14 +40,22 @@ Now that we have installed python in our system, its time to set up a Virtual En
 ### How to set up a Virtual Environment?
 [How to create a python Virtual Environments](https://docs.python.org/3/library/venv.html) this page provides you a very easy explanation for creating Python virtual environment. 
 
+The image below shows how its done:
+![Alt text](./images/creat_venv.png?web=raw "create_venv")
+
 ### Installing python packages
 
-Once you have created a virtual environment, Activate the environment by running "activate.bat" from your environment directory. After activating your environment your environment name will show in the brackets, like this "(project_env)" in the picture below:
+Once you have created a virtual environment, Activate the environment by running "activate.bat" from your environment directory. After activating your environment your environment name will show in the brackets, like this "(newenv)" in the picture below:
 
-![Alt text](https://miro.medium.com/max/1095/1*oTcSPKxWdQe_jNh7yYDsNg.png "activate venv")
+![Alt text](./images/activate_venv.png?web=raw "activate venv")
 
 
-Once you have successfully activated your environment, just type "pip install package_name" and hit enter, the package will install. After installing all important packages like numpy, pandas, matplotlib, seaborn, scikit-learn, and jupyter lab. You are done with setting up your working environment. Now, we can begin writing programs for our project.
+Once you have successfully activated your environment, just type "pip install package_name" and hit enter, the package will install. 
+
+Like this:
+![Alt text](./images/install_packages.png?web=raw "install packages")
+
+After installing all important packages like numpy, pandas, matplotlib, seaborn, scikit-learn, and jupyter lab. You are done with setting up your working environment. Now, we can begin writing programs for our project.
 
 ### Where to write Code?
 
@@ -804,4 +812,129 @@ Below is the code for an easy implementation of Macro, Micro and Weighted averag
         # returning overall f1score
         return overall_f1score
 ```
+
+### Confusion Matrix
+
+A confusion matrix is nothing but a table of TP, FP, TN, and FN. With the help of confusion matrix you can quickly see how many samples were miss classified and how many were classified correctly.
+
+```python
+    # Code to display a confusion matrix
+    from sklearn.metrics import confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    y_true = [0,1,0,1,1,0,0,0]
+    y_pred = [1,1,0,1,1,1,0,0]
+
+    cm = confusion_matrix(y_true= y_true, y_pred= y_pred)
+    sns.heatmap(cm, annot=True)
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.show()
+```
+Output of the above code:
+![Alt text](./images/confusion_matrix.png?raw=true "confusion_matrix")
+
+NOTE: the confusion matrix we just plot is transpose of the confusion matrix that is plotted using "plot_confusion_matrix" from "sklearn.metrics" module.
+
+### Evaluation metrics for Multi-label classification problems
+**Multi-label Classification Problem**: In multiclass classification problem each sample can have one or more classes associated with it.
+>For Example: You are given a dataset of images with multiple objects in it like, chair, window, or a flower pot etc., These objects are the labels/classes that are associated to the image which is one sample. In simple words, one image can have multiple targets associated with it. Such a problem is called multi-label classification problem.
+
+The metrics for this type of classification problem are as follows:
+- Precision at k (P@k)
+- Average Precision at k (AP@k)
+- Mean Average Precision at k (MAP@k)
+- Log loss
+
+**Precision at k (P@k)**: One must not confuse this precision with the precision discussed earlier. If you have a list of original classes for a given sample and list of predicted classes for the same, precision is defined as the number of hits in the predicted list considering only top-k predictions, divided by k.
+
+The implementation below will make it clear:
+#### Implementation of Precision at k (P@k) in Python
+```python
+    #precision at k
+
+    def p_at_k(y_true, y_pred, k):
+        """
+        Function for calculating precision at k
+        :param y_true: list of values , Actual Classes
+        :param y_pred: list of values, Predicted Classes
+        :return: precision at a given value k
+        
+        """
+        #if k is 0 return 0
+        #k should always be >= 1
+        
+        if k == 0:
+            return 0
+        
+        #we are interested in only top-k predictions
+        y_pred = y_pred[:k]
+        
+        #convert predictions to set
+        true_set = set(y_true)
+        pred_set = set(y_pred)
+        
+        #find common values
+        common_values = true_set.intersection(pred_set)
+        
+        return len(common_values)/len(y_pred)
+```
+
+**Average Precision at k (AP@k)**:  AP@k is calculated using P@k. For example, if we have to calculate AP@3, we calculate P@1, P@2 and P@3 and then divide the sum by 3.
+
+#### Implementation of Average Precision at k (AP@k) in Python
+```python
+    def ap_at_k(y_true, y_pred, k):
+        """
+        Function for calculating precision at k
+        :param y_true: list of values , Actual Classes
+        :param y_pred: list of values, Predicted Classes
+        :return: average precision at a given value k
+        
+        """
+        # initialize an empty list
+        # for storing precisions at k (0,1,2,3,...k)
+        pk_values = []
+        
+        for i in range(1, k+1):
+            #calculate p@i and append to list
+            pk_values.append(p_at_k(y_true, y_pred, i))
+            
+        if len(pk_values) == 0:
+            return 0
+        
+        else:
+            #return avearge precision at k
+            return sum(pk_values) / len(pk_values)
+        
+```
+**Mean Average Precision at k (MAP@k)**: MAP@k is just an average of AP@k, For example, if we have to calculate MAP@3, we calculate AP@1, AP@2 and AP@3 and then divide the sum by 3.
+
+#### Implementation of Mean Average Precision at k (MAP@k) in Python
+```python
+    def map_at_k(y_true, y_pred, k):
+        """
+        This function calculates mean avg precision at k 
+        for a single sample
+        :param y_true: list of values, actual classes
+        :param y_pred: list of values, predicted classes
+        :return: mean avg precision at a given value k
+        """
+        
+        # initialize an empty list
+        # for storing AP@k for each k (k = 0,1,2,3..k )
+        apk_values = []
+        
+        for i in range(len(y_true)):
+
+            #store apk values for each sample
+            apk_values.append(ap_at_k(y_true[i], y_pred[i], k=k))
+            
+        # return the average of AP@k_values
+        return sum(apk_values)/len(apk_values)
+```
+
+
+
 
