@@ -224,7 +224,7 @@ We use precision, recall and/or f1 score where Accuracy metric fails, i.e, when 
 
 ### Python Implementation for Precision
 Firstly, we define the functions to calculate the TP, TN, FP, and FN.
-``` python:
+```python
     def true_positive(y_true, y_pred):
         """Function to calculate True Positive
         :param y_true: list of true values
@@ -282,7 +282,7 @@ Now that we have defined functions for TP, TN, FP, and FN. We can Implement Prec
 Formula to Calculate Precision (P)
 >*Precision (P) =  TP / (TP + FP)*
 
-``` python:
+```python
     #Python code for Precision
     def precision(y_true, y_pred):
         """
@@ -305,7 +305,7 @@ Recall is also known as Sensitivity or True Positive Rate (TPR).
 Formula to Calculate Recall (R)
 >*Recall (R) =  TP / (TP + FN)*
 
-``` python:
+```python
     #Python code for calculating Recall
     def recall(y_true, y_pred):
         """
@@ -331,7 +331,7 @@ Formula to Calculate F1 Score (F1)
 
 where, P: Precision; R: Recall
 
-``` python:
+```python
     #Python code for calculating
     def f1_score(y_true, y_pred):
         """Function to calculate f1 Score
