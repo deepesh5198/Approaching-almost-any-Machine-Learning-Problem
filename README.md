@@ -497,5 +497,7 @@ Now that we know what TPR and FPR are, we can now implement Area Under ROC or AU
     plt.xlabel("FPR")
     plt.ylabel("TPR")
     plt.title("Receiver Operating Curve")
-    
+
 ```
+#### Output of the above code
+![Alt text](../images/roc_curve.png "roc_curve")
