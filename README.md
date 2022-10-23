@@ -198,12 +198,13 @@ Now, if you say, all images in our validation set are images of X-Ray with disea
 
 You correctly classified 90% of the images so your model's Accuracy score is 90% (But that is useless!!)
 
-*Our data was highly sqewed that is, the number of samples of one class outnumber the number of samples of the other class*
+*Our data was highly skewed that is, the number of samples of one class outnumber the number of samples of the other class*
 
 **Conlusion:** When data is highly skewed i.e, there is great imbalance in the classes then it is adviced not to use Accuracy Score as evaluation metric.
 
 #### Accuracy Score implementation in python
 ```python
+    # Accuracy Score implementation in python
     def accuracy(y_pred, y_true):
         count=0
         for yp, yt in zip(y_pred, y_true):
@@ -211,6 +212,12 @@ You correctly classified 90% of the images so your model's Accuracy score is 90%
                 count+=1
 
         return count/len(y_pred)
+```
+#### Scikit-Learn implementation of Accuracy Score
+```python
+    # Scikit-Learn implementation of Accuracy Score
+    from sklearn.metrics import accuracy_score
+    accuracy_score(y_true, y_pred)
 ```
 
 ### Precision (P), Recall (R), and F1 Score (F1)
@@ -297,6 +304,12 @@ Formula to Calculate Precision (P)
                                             + false_positive(y_true, y_pred))
 
 ```
+#### Scikit-Learn implementation of Precision
+```python
+    # Scikit-Learn implementation of Precision
+    from sklearn.metrics import precision_score
+    precision_score(y_true, y_pred)
+```
 
 #### Python Implementation for Recall
 Recall is also known as Sensitivity or True Positive Rate (TPR).
@@ -321,6 +334,12 @@ Formula to Calculate Recall (R)
         return true_positive(y_true, y_pred)/(true_positive(y_true, y_pred)\
                                             + false_negative(y_true, y_pred))
 ```
+#### Scikit-Learn implementation of Recall
+```python
+    # Scikit-Learn implementation of Recall
+    from sklearn.metrics import recall_score
+    recall_score(y_true, y_pred)
+```
 
 #### Python Implementation for F1 Score
 F1 Score is a combined representation of both Precision and Recall.
@@ -333,14 +352,150 @@ where, P: Precision; R: Recall
 ```python
     #Python code for calculating
     def f1_score(y_true, y_pred):
-        """Function to calculate f1 Score
+        """
+        Function to calculate f1 Score
         :param y_true: a list of true values
         :param y_pred: a list of predicted values
         :return F1 Score: F1 Score = 2PR/(P+R)
+
         """
         
         # Here we are using previously defined precision and
         # recall functions
         return 2*precision(y_true, y_pred)*recall(y_true, y_pred)\
                 /(precision(y_true, y_pred) + recall(y_true, y_pred))
+```
+#### Scikit-Learn implementation of F1 Score
+```python
+    # Scikit-Learn implementation of F1 Score
+    from sklearn.metrics import f1_score
+    f1_score(y_true, y_pred)
+```
+### Area Under the ROC curve
+Before understanding Area Under the Receiver Operating Characteristcs (ROC) cure, we need to know two terms, *True Positive Rate* and *False Positive Rate*.
+
+- **True Positive Rate (TPR)** measures the proportion of actual positives that are correctly identified as such (e.g., the percentage of sick people who are correctly identified as having the condition). True Positive Rate is same as Recall and is also called **Sensitivity**.
+
+Formula for True Positive Rate (TPR):
+>*True Positive Rate (TPR) = TP / (TP + FN)*
+
+where, TP: True Positive; FN: False Negative
+
+##### Python Implementation for TPR
+It is same as Recall.
+```python
+    #Python code for calculating TPR
+    def tpr(y_true, y_pred):
+        """
+        Function to calculate TPR of model
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+            
+        :return: TPR = TP /(TP + FN)
+            
+        """
+        
+        # here we are using the previously defined functions for
+        # true_positive and false_negative
+        return true_positive(y_true, y_pred)/(true_positive(y_true, y_pred)\
+                                            + false_negative(y_true, y_pred))
+```
+
+-**False Positive Rate (FPR)** is calculated as the ratio between the number of negative events wrongly predicted/classified as positive (False Positives) and the total number of actual negative events (False Postive + True Negative).
+
+Formula for False Positive Rate (FPR):
+>*False Positive Rate (FPR) = FP / (FP + TN)*
+
+where, FP: False Positive; TN: True Negative
+
+##### Python Implementation for FPR
+```python
+    #Python code for calculating FPR
+    def fpr(y_true, y_pred):
+        """
+        Function to calculate FPR of model
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+            
+        :return: FPR = FP /(FP + TN)
+            
+        """
+        
+        # here we are using the previously defined functions for
+        # false_positive and true_negative
+        return false_positive(y_true, y_pred)/(false_positive(y_true, y_pred)\
+                                            + true_negative(y_true, y_pred)
+```
+-**True Negative Rate (TNR)** measures the proportion of negatives that are correctly identified as such (for example, the percentage of healthy people who are correctly identified as not having the condition). True Negative Rate (TNR) is also known as **Specificity**.
+
+Formula for True Negative Rate (TNR)/ Specificity.
+>*True Negative Rate (TNR) = TN / TN + FP*
+
+where, TN: True Negative; FP: False Positive
+
+Alternate formula:
+>*True Negative Rate (TNR) = 1 - FPR*
+
+where, FPR: False Positive Rate
+
+##### Python Implementation for TNR
+```python
+    #Python code for calculating FPR
+    def tnr(y_true, y_pred):
+        """
+        Function to calculate TNR of model
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+            
+        :return: TNR = TN /(TN + FP)
+            
+        """
+        
+        # here we are using the previously defined functions for
+        # true_negative and false_positive
+        return true_negative(y_true, y_pred)/(true_negative(y_true, y_pred)\
+                                            + false_positive(y_true, y_pred)
+```
+
+Now that we know what TPR and FPR are, we can now implement Area Under ROC or AUC score. To get the ROC curve we simply just plot a FPR vs TPR graph using *matplotlib.pyplot*. and the area under the ROC is what is known as AUC. Now, lets implement it in python.
+
+```python
+    #Python code for plotting ROC curve
+    
+    #import matplotlib.pyplot for plotting
+    import matplotlib.pyplot as plt
+    tpr_list = []
+    fpr_list = []
+
+    #actual targets
+    y_true = [0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1]
+
+    #predicted probabilites of a sample being 1.
+    y_pred = [0.1, 0.3, 0.2, 0.6, 0.8, 0.05, 0.9, 0.5, 0.3, 0.66, 0.3, 0.2, 0.85, 0.15, 0.99]
+
+    #thresholds
+    thresholds = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.99, 1.0]
+
+    for thres in thresholds:
+        temp_pred = [1 if i>= thres else 0 for i in y_pred]
+        
+        #calculate tpr using tpr function
+        temp_tpr = tpr(y_true, temp_pred)
+        #calculate fpr using fpr function
+        temp_fpr = fpr(y_true, temp_pred)
+        
+        #append to the lists
+        tpr_list.append(temp_tpr)
+        fpr_list.append(temp_fpr)
+
+    #plotting the ROC curve
+    plt.figure(figsize= (4,3))
+    plt.plot(fpr_list, tpr_list)
+    plt.fill_between(fpr_list,tpr_list, alpha = 0.4)
+    plt.xlim(0, 1.0)
+    plt.ylim(0, 1.0)
+    plt.xlabel("FPR")
+    plt.ylabel("TPR")
+    plt.title("Receiver Operating Curve")
+    
 ```
