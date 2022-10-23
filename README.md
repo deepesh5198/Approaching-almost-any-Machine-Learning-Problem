@@ -158,7 +158,7 @@ For regression problem we use following evaluation metrics:
 
 Now, we will discuss each of these metrics in little detail.
 
-#### Accuracy Score
+### Accuracy Score
 Accuracy is the simplest of evaluation metrics.
 > Accuracy = *No. of correctly Classified points / Total number of data points* 
 
@@ -202,6 +202,146 @@ You correctly classified 90% of the images so your model's Accuracy score is 90%
 
 **Conlusion:** When data is highly skewed i.e, there is great imbalance in the classes then it is adviced not to use Accuracy Score as evaluation metric.
 
+#### Accuracy Score implementation in python
+``` pyhton:
+    def accuracy(y_pred, y_true):
+        count=0
+        for yp, yt in zip(y_pred, y_true):
+            if yp == yt:
+                count+=1
 
+        return count/len(y_pred)
 
+```
 
+### Precision (P), Recall (R), and F1 Score (F1)
+We use precision, recall and/or f1 score where Accuracy metric fails, i.e, when there is huge imbalance in classes in the data. For understanding precision, recall and f1 score we need to know a few terms.
+
+- **True Positive (TP)**: When the actual class of sample is *positive* and our model predict it as *positive*.
+- **True Negative (TN)**: When the actual class of sample is *negative* and our model predict it as *negative*.
+- **False Positive (FP)**: When the actual class of sample is *negative* and our model predict it as *positive*.
+- **False Negative (FN)**: When the actual class of sample is *positive* and our model predict it as *negative*.
+
+### Python Implementation for Precision
+Firstly, we define the functions to calculate the TP, TN, FP, and FN.
+``` python:
+    def true_positive(y_true, y_pred):
+        """Function to calculate True Positive
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: True Positive = number of correctly classified +ve labels
+
+        """
+        count = 0
+        for yt, yp in zip(y_true, y_pred):
+            if yt == 1 and yp == 1:
+                count+=1
+        return count
+
+    def true_negative(y_true, y_pred):
+        """Function to calculate True Negative
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: True Negative = number of correctly classified -ve labels
+
+        """
+        count = 0
+        for yt, yp in zip(y_true, y_pred):
+            if yt == 0 and yp == 0:
+                count+=1
+        return count
+
+    def false_positive(y_true, y_pred):
+        """Function to calculate False Positive
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: False Positive = number of wrongly classified +ve labels
+
+        """
+        count = 0
+        for yt, yp in zip(y_true, y_pred):
+            if yp == 1 and yt == 0:
+                count+=1
+        return count
+
+    def false_negative(y_true, y_pred):
+        """Function to calculate False Negative
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: False Negative = number of wrongly classified -ve labels
+
+        """
+        count = 0
+        for yt, yp in zip(y_true, y_pred):
+            if yp == 0 and yt == 1:
+                count+=1
+        return count
+```
+Now that we have defined functions for TP, TN, FP, and FN. We can Implement Precision.
+
+Formula to Calculate Precision (P)
+>*Precision (P) =  TP / (TP + FP)*
+
+``` python:
+    #Python code for Precision
+    def precision(y_true, y_pred):
+        """
+        Function to calculate Precision of model
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        
+        :return: Precision = TP /(TP + FP)
+        
+        """
+        
+        return true_positive(y_true, y_pred)/(true_positive(y_true, y_pred)\
+                                            + false_positive(y_true, y_pred))
+
+```
+
+### Python Implementation for Recall
+Recall is also known as Sensitivity or True Positive Rate (TPR).
+
+Formula to Calculate Recall (R)
+>*Recall (R) =  TP / (TP + FN)*
+
+``` python:
+    #Python code for calculating Recall
+    def recall(y_true, y_pred):
+        """
+        Function to calculate Recall of model
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+            
+        :return: Recall = TP /(TP + FN)
+            
+        """
+        
+        # here we are using the previously defined functions for
+        # true_positive and false_negative
+        return true_positive(y_true, y_pred)/(true_positive(y_true, y_pred)\
+                                            + false_negative(y_true, y_pred))
+```
+
+### Python Implementation for F1 Score
+F1 Score is a combined representation of both Precision and Recall.
+
+Formula to Calculate F1 Score (F1)
+>*F1 Score (F1) =  2*P*R / (P + R)*
+
+where, P: Precision; R: Recall
+
+``` python:
+    #Python code for calculating
+    def f1_score(y_true, y_pred):
+        """Function to calculate f1 Score
+        :param y_true: a list of true values
+        :param y_pred: a list of predicted values
+        :return F1 Score: F1 Score = 2PR/(P+R)
+        """
+        
+        # Here we are using previously defined precision and
+        # recall functions
+        return 2*precision(y_true, y_pred)*recall(y_true, y_pred)\
+                /(precision(y_true, y_pred) + recall(y_true, y_pred))
+```
