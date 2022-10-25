@@ -9,6 +9,7 @@ As the name of the book suggests, this book is about how you can approach any ma
 - [Chapter 2 - Supervised vs Unsupervised Learning](#chapter2)
 - [Chapter 3 - Cross Validation](#chapter3)
 - [Chapter 4 - Evaluation Metrics](#chapter4)
+- [Chapter 5 - Arranging Machine Learning Projects](#chapter5)
 
 
 <a name = "chapter1">
@@ -1317,3 +1318,18 @@ The formula for MCC is quite simple.
     # Matthew's Correlation Coefficient
     mcc = metrics.matthews_corrcoef(y_true, y_pred, 
 ```
+
+<a name = "chapter5">
+<h1>Chapter 5 - Arranging Machine Learning Projects</h1>
+</a>
+
+We should build the classification framework in such a way that most problems will become plug n’ play. Such that, you are able to train a model without making too many changes to the code, and when you improve your models, you are be able to track them using git.
+
+### Let’s look at the structure of the files... 
+Firstly, for any project that you are doing, create a new folder. For example, I am calling the project “ML_Project”.
+The inside of the project folder should look something like this:
+![Alt text](./images/project_arrangement.jpeg?web=raw "project arrangement")
+
+It should look like this:
+![Alt text](./images/project_folder.png?web=raw "project folder")
+
