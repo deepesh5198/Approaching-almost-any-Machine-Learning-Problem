@@ -1358,6 +1358,8 @@ In "notebook/" folder, we create a python notebook for exploring our data. Data 
 #### Code to explore the data
 Firstly, we import all the important libraries.
 ```python
+    #/notebooks/exploration.ipynb
+
     #importing all the important packages
     import numpy as np
     import pandas as pd
@@ -1386,6 +1388,118 @@ The above code will give the following output:
 ![Alt text](./images/count_plot.png?web=raw "count plot")
 
 Seeing this plot we can say there is no significant skeweness in the data. Hence, we can use Accuracy, Precision, Recall, and F1 Score as evaluation metrics.
+
+### Create K-Fold data for Validation
+The next step after deciding the metric is, creating the K-Fold data for validation. For that we create a *"create_folds.py"* script in our "src/" folder. 
+
+And write the following code:
+```python
+    # src/create_folds.py
+
+    #import necessary packages
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import KFold
+
+    # read the data
+    train_df = pd.read_csv("..input/mnist_train.csv")
+    
+    # we create new column called kfold and fill it with -1
+    train_df["kfold"] = -1
+
+    # shuffling the rows
+    train_df = train_df.sample(frac =1).reset_index(drop=True)
+
+    # initialize object of KFold class
+    kf = KFold(n_splits=5)
+
+    # creating folds
+    for fold, (trn_, val_) in enumerate(kf.split(X = train_df)):
+        train_df.loc[val_, 'kfold'] = fold
+        
+    # export the data with folds to input folder
+    train_df.to_csv("../input/mnist_train_kfolds.csv", index=False)
+
+```
+This will create a new file in the input/ folder called "mnist_train_folds.csv", and it’s the same as "mnist_train.csv". The only differences are that this CSV is shuffled and has a new column called kfold. 
+
+Now that we have created the data with folds, we are good to go with creating a basic model. This is done in *"train.py"* in "src/" folder.
+
+and we write the following code in it:
+```python
+    #src/train.py
+
+    # import all the necessary libraries
+    import pickle
+    import pandas as pd
+    import argparse
+    from sklearn.metrics import accuracy_score
+    from sklearn.tree import DecisionTreeClassifier
+    import model_dispatcher
+    import os
+
+    def run(fold):
+        #read the training data with folds
+        df = pd.read_csv("../input/mnist_train_kfolds.csv")
+        
+        #training data is where kfold is not equal to provided fold
+        #also, note that we reset the index
+        
+        df_train = df[df["kfold"] != fold].reset_index(drop=True)
+        
+        df_valid = df[df["kfold"] == fold].reset_index(drop=True)
+        
+        #drop the label column from and make x_train and y_train
+        #using ".values" to convert data into numpy array
+        X_train = df_train.drop("label", axis=1).values
+        y_train = df_train["label"].values
+        
+        
+        #for Validation
+        #drop the label column from and make x_valid and y_valid
+        #using ".values" to convert data into numpy array
+        X_valid = df_valid.drop("label", axis=1).values
+        y_valid = df_valid["label"].values
+        
+        
+        #initializing simple Decision Tree classifier
+        clf = model_dispatcher.models[model]
+        
+        clf.fit(X=X_train, y=y_train)
+        
+        predicted = clf.predict(X_valid)
+        
+        #calculate and print accuracy
+        accuracy = accuracy_score(y_valid, predicted)
+        print(f"Fold = {fold}, Accuracy = {accuracy}")
+        
+        
+        #save model
+        with open(f"dt_{fold}.bin", "wb") as f:
+            pickle.dump(clf, f)
+        
+    if __name__ == "__main__":
+        #initialize ArgumentParser class
+        parser = argparse.ArgumentParser()
+        
+        #add the different arguments you need and their type
+        #currently we only need fold
+        
+        parser.add_argument("--fold", type=int)
+        
+        parser.add_argument("--model", type=str)
+        
+        #read the arguments from command line
+        args = parser.parse_args()
+        
+        #run the folds specified by commmand line arguments
+        
+        run(
+            fold = args.fold
+            mode = args.model
+        )
+```
+
 
 
 
