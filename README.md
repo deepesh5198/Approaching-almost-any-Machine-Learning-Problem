@@ -1358,7 +1358,7 @@ In "notebook/" folder, we create a python notebook for exploring our data. Data 
 #### Code to explore the data
 Firstly, we import all the important libraries.
 ```python
-    #/notebooks/exploration.ipynb
+    #notebooks/exploration.ipynb
 
     #importing all the important packages
     import numpy as np
@@ -1423,24 +1423,50 @@ And write the following code:
 ```
 This will create a new file in the input/ folder called "mnist_train_folds.csv", and it’s the same as "mnist_train.csv". The only differences are that this CSV is shuffled and has a new column called kfold. 
 
-Now that we have created the data with folds, we are good to go with creating a basic model. This is done in *"train.py"* in "src/" folder.
+Now that we have created the data with folds, we are good to go with creating a basic model. This is done in *"train.py", "config.py", "model_dispatcher.py"*  in "src/" folder.
 
-and we write the following code in it:
+#### config.py
+```python
+    # src/config.py
+
+    # just store the paths in variables
+    TRAINING_FILE = "../input/mnist_train_folds.csv"
+    MODEL_OUTPUT = "../models/"
+
+```
+
+#### model_dispatcher.py
+```python
+    # src/model_dispatcher.py
+    # dictionary of models
+    from sklear.tree import DecisionTreeClassifier()
+
+    models = {"decision_tree_gini": DecisionTreeClassifier(criterion = "gini"),
+                "decision_tree_entropy": DecisionTreeClassifier(criterion = "entropy"),
+                }
+```
+
+#### train.py
 ```python
     #src/train.py
 
     # import all the necessary libraries
     import pickle
-    import pandas as pd
     import argparse
+    import pandas as pd
     from sklearn.metrics import accuracy_score
     from sklearn.tree import DecisionTreeClassifier
+    #importing config.py
+    import config
+
+    #import model_dispatcher.py
     import model_dispatcher
-    import os
+    
+
 
     def run(fold):
         #read the training data with folds
-        df = pd.read_csv("../input/mnist_train_kfolds.csv")
+        df = pd.read_csv(config.TRAINING_FILE)
         
         #training data is where kfold is not equal to provided fold
         #also, note that we reset the index
@@ -1455,36 +1481,36 @@ and we write the following code in it:
         y_train = df_train["label"].values
         
         
-        #for Validation
-        #drop the label column from and make x_valid and y_valid
-        #using ".values" to convert data into numpy array
+        # for Validation
+        # drop the label column from and make x_valid and y_valid
+        # using ".values" to convert data into numpy array
         X_valid = df_valid.drop("label", axis=1).values
         y_valid = df_valid["label"].values
         
         
-        #initializing simple Decision Tree classifier
+        # initializing model class using model_dispatcher
         clf = model_dispatcher.models[model]
         
+        # fit the data to the model
         clf.fit(X=X_train, y=y_train)
         
+        # predict labels for Validation data
         predicted = clf.predict(X_valid)
         
-        #calculate and print accuracy
+        # calculate and print accuracy
         accuracy = accuracy_score(y_valid, predicted)
         print(f"Fold = {fold}, Accuracy = {accuracy}")
         
         
-        #save model
-        with open(f"dt_{fold}.bin", "wb") as f:
+        #save model in models/ folder
+        with open(f"{config.MODEL_OUTPUT}dt_{fold}.bin", "wb") as f:
             pickle.dump(clf, f)
         
     if __name__ == "__main__":
         #initialize ArgumentParser class
         parser = argparse.ArgumentParser()
         
-        #add the different arguments you need and their type
-        #currently we only need fold
-        
+        # add the different arguments you need and their type
         parser.add_argument("--fold", type=int)
         
         parser.add_argument("--model", type=str)
@@ -1500,6 +1526,20 @@ and we write the following code in it:
         )
 ```
 
+When we are done writing scripts, we can run our train.py script in a terminal as follows:
+```
+    python train.py --fold 0 --model decision_tree_gini
+    Fold=0, Accuracy=0.8665833333333334
+```
+
+We can change the folds and model by changing the commands as:
+
+```
+    python train.py --fold 1 --model decision_tree_entropy
+    Fold=1, Accuracy=0.8705833333333334
+```
+
+In this way we can put any model in model_dispatcher like RandomForestClassifier, LogisticRegression etc. and train our models by passing arguments in any terminal.
 
 
 
