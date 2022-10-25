@@ -1337,7 +1337,7 @@ It should look like this:
 
 - *input/*: This folder consists of all the input files and data for your machine learning  project. If you are working on NLP projects, you can keep your embeddings here.  If you are working on image projects, all images go to a subfolder inside this folder.
 
-- *src/*: We will keep all the python scripts associated with the project here. If I talk about a python script, i.e. any ".py" file (python script) is stored in the *src* folder.
+- *src/*: We will keep all the python scripts associated with the project here. If I talk about a python script, i.e. any *.py file (python script) is stored in the *src* folder.
 
 - *models/*: This folder keeps all the trained models.
 
@@ -1346,6 +1346,48 @@ It should look like this:
 - *README.md*: This is a markdown file where you can describe your project and write instructions on how to train the model or to serve this in a production environment.
 
 - *LICENSE*: This is a simple text file that consists of a license for the project, such as MIT, Apache, etc. Going into details of the licenses is beyond the scope of this book.
+
+### Creating First Project
+For example, we will take the famous MNIST dataset. The dataset can be found [here](https://www.kaggle.com/datasets/oddrationale/mnist-in-csv?select=mnist_train.csv). 
+
+There are two files *"mnist_train.csv"* and *"mnist_test.csv"*, the train file consists of 60,000 images with (in rows) and 785 columns (784 image pixel values) and (1 column for image label).
+
+### Exploration Notebook
+In "notebook/" folder, we create a python notebook for exploring our data. Data exploration is the first and most important step in an ML project. In this step, we explore the data, and based upon that we decide what techniques are applicable for that type of data.
+
+#### Code to explore the data
+Firstly, we import all the important libraries.
+```python
+    #importing all the important packages
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+```
+
+Now, we read the data from our input folder.
+```python
+    # this code reads the csv file from the
+    # given path
+    df = pd.read_csv("../input/mnist_train.csv")
+```
+
+Plotting the countplot to see the distribution of data.
+```python
+    # using seaborn to plot countplot
+    sns.countplot(data = df, x = "label")
+    plt.xlabel("label")
+    plt.ylabel("count")
+    plt.show()
+```
+
+The above code will give the following output:
+![Alt text](./images/count_plot.png?web=raw "count plot")
+
+Seeing this plot we can say there is no significant skeweness in the data. Hence, we can use Accuracy, Precision, Recall, and F1 Score as evaluation metrics.
+
+
 
 
 
