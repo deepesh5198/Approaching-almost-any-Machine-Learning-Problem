@@ -1176,7 +1176,7 @@ Formula for MPE:
         return percentage_error * 100/len(y_true)
 ```
 
-### Mean Percentage Error (MAPE)
+### Mean Absolute Percentage Error (MAPE)
 Formula for MAPE:
 >*MAPE = (1/N) * sum(|True - Predicted| / True Value) * 100*
 
@@ -1238,4 +1238,82 @@ Formula for R-Squared:
             
         r_sq_error = 1 - (numerator / denominator)
         return r_sq_error
+```
+
+### SCIKIT-LEARN IMPLEMENTATION FOR ALL REGRESSION METRICS
+```python
+    from sklearn import metrics
+    # Mean Absolute Error (MAE)
+    mae = metrics.mean_absolute_error(y_true, y_pred)
+
+    # Mean Squared Error (MSE)
+    mse = metrics.mean_squared_error(y_true, y_pred, squared = True)
+
+    # Root Mean Squared Error (RMSE)
+    rmse = metrics.mean_squared_error(y_true, y_pred, squared = False)
+
+    # Mean Squared Logarithmic Error (MSLE)
+    msle = metrics.mean_squared_log_error(y_true, y_pred, squared = True)
+
+    # Mean Squared Logarithmic Error (RMSLE)
+    rmsle = metrics.mean_squared_log_error(y_true, y_pred, squared = False)
+
+    # Mean Absolute Percentage Error (MAPE)
+    mape = metrics.mean_absolute_percentage_error(y_true, y_pred)
+
+    # R-Squared Error
+    r2 = metrics.r2_score(y_true, y_pred)
+
+```
+### Some Advanced Regression Metrics
+### 1. Cohen's kappa
+We can easily find it in sklearn.metrics module.
+
+```python
+    # Cohen Kappa score using sklearn
+    from sklearn.metrics import cohen_kappa_score
+```
+     
+### 2. Matthew's Correlation Coefficient (MCC)
+MCC ranges from -1 to 1. 1 is perfect prediction, -1 is imperfect prediction, and 0 is random prediction. 
+
+The formula for MCC is quite simple.
+>MCC =  (TP * TN - FP * FN) / sqrt( (TP + FP) * (FN + TN) * (FP + TN) * (TP + FN) )
+
+#### Python implementation for MCC:
+```python
+    def mcc(y_true, y_pred):
+        """
+        This function calculates Matthew's Correlation Coefficient
+        for binary classification.
+        :param y_true: list of true values
+        :param y_pred: list of predicted values
+        :return: mcc score
+        """
+
+        # calculating tp, tn, fp, fn using
+        # previously defined functions
+        tp = true_positive(y_true, y_pred)
+        tn = true_negative(y_true, y_pred)
+        fp = false_positive(y_true, y_pred)
+        fn = false_negative(y_true, y_pred)
+        
+        # calculating numerator
+        numerator = (tp * tn) - (fp * fn)
+        
+        # calculating denominator
+        denominator = ((tp + fp) *(fn + tn) *(fp + tn) *(tp + fn))
+        
+        # taking square root of denominator
+        denominator = denominator ** 0.5
+        
+        # returning MCC
+        return numerator/denominator
+```
+
+#### Scikit-learn implementation of MCC:
+```python
+    from sklearn import metrics
+    # Matthew's Correlation Coefficient
+    mcc = metrics.matthews_corrcoef(y_true, y_pred, 
 ```
