@@ -934,7 +934,308 @@ The implementation below will make it clear:
         # return the average of AP@k_values
         return sum(apk_values)/len(apk_values)
 ```
+### Evaluation Metrics for Regression Problems
+The most common metric in regression is **Error**. It is very simple and easy to understand.
 
+Formula for Error:
+>*Error = True Value - Predicted Value*
 
+then comes **Absolute Error** which is nothing but absolute of the error.
 
+Formula for Absolute Error:
+>*Error = |True Value - Predicted Value|*
 
+Now that we know what *Error* and *Absolute Error* are we can discuss the other metrics, which are as follows:
+- **Mean Absolute Error (MAE)**: We just simply take the mean of absolute error.
+- **Mean Squared Error (MSE)**: We square the error terms and take mean.
+- **Root Mean Squared Error (RMSE)**: We just simply take the square root of Mean Squared Error.
+- **Squared Logarithmic Error (SLE)**: We take the log of the true and predicted values and calculate the error, and then square it.
+- **Mean Squared Logarithmic Error (MSLE)**: We simply take the mean of the Squared Logarithmic Error.
+- **Root Mean Squared Logarithmic Error (RMSLE)**: We simply take the root of the Mean Squared Logarithmic Error.
+- **Percentage Error**: *((True Value - Predicted Value) / True Value) * 100*
+- **Mean Precentage Error (MPE)**: We just take the mean of the percentage error.
+- **Mean Absolute Percentage Error (MAPE)**: We take the absolute of the error and calculate percentage of error and then take the mean.
+- **R^2 (R-Squared)**: Also known as **Coefficient of determination**. It says how good your model fits the data. R-squared closert to 1.0 says that the model fits the data quite well, Whereas closer to 0 means model isn't that good. It can also be negative when the model makes absurd predictions.
+
+Now, lets see the implementation of these metrics.
+### Mean Absolute Error (MAE)
+Formula for MAE:
+>*MAE = (1/N) * Absolute Error*
+
+#### Python implementation for MAE:
+```python
+    def mae(y_true, y_pred) -> float:
+        """
+        Function to calculate mean absolute error
+        :param y_true: List of true values (real numbers)
+        :param y_pred: List of predicted values (real numbers)
+        :return: mean absolute error
+        """
+        #initialize error at zero
+        error = 0
+        
+        #loop over all samples in true and predicted list
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate absolute error
+            #keep adding each error
+            error += abs(yt - yp)
+            
+        return error/len(y_true)
+```
+### Mean Squared Error (MSE)
+Formula for MSE:
+>*MSE = (1/N) * sum((True Value - Predicted)^2)*
+
+#### Python implementation for MSE:
+```python
+    def mse(y_true, y_pred) -> float:
+        """
+        Function to calculate mean squared error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: mean squared error
+        """
+        
+        #initialize error at zero
+        sq_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate squared error
+            #add them iteratively
+            sq_error += (yt - yp)**2
+            
+        return sq_error/ len(y_true)
+```
+### Root Mean Squared Error (RMSE)
+Formula for RMSE:
+>*RMSE = SQRT( (1/N) * sum((True Value - Predicted)^2) )*
+
+#### Python implementation for RMSE:
+```python
+    def rmse(y_true, y_pred) -> float:
+        """
+        Function to calculate root mean squared error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: root mean squared error
+        """
+        
+        #initialize error at zero
+        sq_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate root squared error
+            #add them iteratively
+            sq_error += (yt - yp)**2
+        
+        #take mean and return
+        return (sq_error/ len(y_true))**(0.5)
+```
+
+### Squared Logarithmic Error (SLE)
+Formula for SLE:
+>*SLE = sum( (log(1 + True Value) - log(1 + Predicted))^2) )*
+
+#### Python implementation for SLE:
+```python
+    def sle(y_true, y_pred) -> float:
+        """
+        Function to calculate squared logarithmic error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: squared logarithmic error
+        """
+        
+        #initialize error at zero
+        sl_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate squared log error
+            #add them iteratively
+            sl_error += (np.log(1 + yt) - np.log(1 + yp))**2
+            
+        return sl_error
+```
+
+### Mean Squared Logarithmic Error (MSLE)
+Formula for MSLE:
+>*MSLE = (1/N) * sum((log(1 + True Value) - log(1 + Predicted))^2))*
+
+#### Python implementation for MSLE:
+```python
+    def msle(y_true, y_pred) -> float:
+        """
+        Function to calculate mean squared logarithmic error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: mean squared logarithmic error
+        """
+        
+        #initialize error at zero
+        sl_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate squared log error
+            #add them iteratively
+            sl_error += (np.log(1 + yt) - np.log(1 + yp))**2
+            
+        #take mean of error and return    
+        return sl_error/len(y_true)
+```
+
+### Root Mean Squared Logarithmic Error (RMSLE)
+Formula for RMSLE:
+>*RMSLE = SQRT((1/N) * sum((log(1 + True Value) - log(1 + Predicted))^2)))*
+
+#### Python implementation for RMSLE:
+```python
+    def rmsle(y_true, y_pred) -> float:
+        """
+        Function to calculate root mean squared logarithmic error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: root mean squared logarithmic error
+        """
+        
+        #initialize error at zero
+        rsl_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate root squared log error
+            #add them iteratively
+            rsl_error += ((np.log(1 + yt) - np.log(1 + yp))**2)**(1/2)
+            
+        #take mean of error and return    
+        return rsl_error/len(y_true)
+```
+
+### Percentage Error (PE)
+Formula for PE:
+>*PE = sum((True - Predicted) / True Value)) * 100*
+
+#### Python implementation for Percentage Error:
+```python
+    def percentage_error(y_true, y_pred):
+        """
+        Function to calculate percentage error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: percentage error
+        """
+        
+        #initialize error at zero
+        percentage_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate root squared log error
+            #add them iteratively
+            percentage_error += (yt - yp) / yt
+            
+        #take mean of error and return    
+        return percentage_error * 100
+```
+
+### Mean Percentage Error (MPE)
+Formula for MPE:
+>*MPE = (1/N) * sum((True - Predicted) / True Value) * 100*
+
+#### Python implementation for MPE:
+```python
+    def mean_percentage_error(y_true, y_pred):
+        """
+        Function to calculate mean percentage error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: mean percentage error
+        """
+        
+        #initialize error at zero
+        percentage_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate root squared log error
+            #add them iteratively
+            percentage_error += (yt - yp) / yt
+            
+        #take mean of error and return    
+        return percentage_error * 100/len(y_true)
+```
+
+### Mean Percentage Error (MAPE)
+Formula for MAPE:
+>*MAPE = (1/N) * sum(|True - Predicted| / True Value) * 100*
+
+#### Python implementation for MAPE:
+```python
+    def mape(y_true, y_pred):
+        """
+        Function to calculate mean absolute percentage error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: mean absolute percentage error
+        """
+        
+        #initialize error at zero
+        abs_percentage_error = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate root squared log error
+            #add them iteratively
+            abs_percentage_error += abs(yt - yp) / yt
+            
+        #take mean of error and return    
+        return abs_percentage_error * 100 / len(y_true)
+```
+
+### R^2 (R-Squared)
+Formula for R-Squared:
+>*R-Squared = 1 - sum((yt - yp) ** 2) / sum(yt - mean_yt)*
+
+#### Python implementation for MAPE:
+
+```python
+    def r_squared(y_true, y_pred):
+        """
+        Function to calculate R_squared error
+        :param y_true: list of true values (real numbers)
+        :param y_pred: list of predicted values (real numbers)
+        :return: R_squared error
+        
+        R_squared = 1 - sum((yt - yp)**2) / sum(yt - mean_yt) 
+        """
+        
+        #calculate
+        mean_yt = np.mean(y_true)
+        
+        numerator = 0
+        denominator = 0
+        
+        #loop over all values of y_true, y_pred
+        for yt, yp in zip(y_true, y_pred):
+            
+            #calculate the numerator and denominator part
+            #add them iteratively
+            numerator += (yt - yp)**2
+            
+            denominator += (yt - mean_yt)
+            
+        r_sq_error = 1 - (numerator / denominator)
+        return r_sq_error
+```
