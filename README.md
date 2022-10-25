@@ -1327,8 +1327,10 @@ We should build the classification framework in such a way that most problems wi
 
 ### Let’s look at the structure of the files... 
 Firstly, for any project that you are doing, create a new folder. For example, I am calling the project “ML_Project”.
+
 The inside of the project folder should look something like this:
 ![Alt text](./images/project_arrangement.jpeg?web=raw "project arrangement")
+
 
 It should look like this:
 ![Alt text](./images/project_folder.png?web=raw "project folder")
