@@ -1564,14 +1564,15 @@ A categorical variable is a variable (column/feature in a dataset) that has two 
 For this, let's learn with the famous *"cat-in-the-dat"* dataset. The dataset can be found [here](https://www.kaggle.com/competitions/cat-in-the-dat-ii/data).
 
 #### Exploring the data
-Let's have a look at the data -
+Let's have a look at the data.
 
 ![Alt text](./images/cat_dat_dataset.png?web=raw "cat-in-the-dat")
-This is how the data looks.
 
 
 Let's see the data information.
+
 ![Alt text](./images/cat_dat_info.png?web=raw "cat-in-the-dat info")
+
 As we can see in the image above, There are 23 categorical variables (excluding "id" and "target" columns). The data consist of all four types of categorical variables such as Nomial, Ordinal, Binary and Cyclic ("day" and "month" column).
 
 Overall, there are:
@@ -1584,7 +1585,9 @@ Overall, there are:
 Now, let's plot a count plot to see the distribution of data and to decide what evaluation metric we can use.
 
 Here is the countplot of the data:
+
 ![Alt text](./images/cat_dat_countplot.png?web=raw "cat-in-the-dat countplot")
+
 As we can clearly see there is skewness in the data, that is the samples with target value "0" are more compared to "1". So, with the above analysis we can say we should avoid using Accuracy as the evaluation metric, we will use AUC score for this data.
 
 ### Encoding the Categorical Variables
@@ -1672,9 +1675,12 @@ To binarize the data, simply convert the categorical values to numerical and the
 To reduce the memory consumption, we can store the data in **sparse format**. In a sparse format we only keep the values that matter. In case of binary variables described above, all that matters is where we have "1s".
 
 To understand how sparse representation works, suppose we have three features as shown in figure below:
+
 ![Alt text](./images/binary_repr.jpeg?web=raw "three features")
 
+
 We convert this data to binary representation, and it looks like this:
+
 ![Alt text](./images/binary_repr2.jpeg?web=raw "binary representation")
 
 Now let's turn this into sparse format, to represent this matrix only with ones create a dictionary in which keys are indices of rows and columns and value is 1:
@@ -1709,10 +1715,13 @@ One Hot Encoding is another transformation technique for categorical variables t
 Suppose we represent each category of the ord_2 variable by a vector. This vector is of the same size as the number of categories in the ord_2 variable. Each vector is of size six and has all zeros except at one position.
 
 And it looks like this:
+
 ![Alt text](./one_hot_encode.jpeg?web=raw "one hot encode")
+
 Each vector has a 1 and rest all other values are 0s.
 
 Let't One-hot-encode the following data:
+
 ![Alt text](./images/binary_repr.jpeg?web=raw "three features")
 
 After one-hot-encoding:
