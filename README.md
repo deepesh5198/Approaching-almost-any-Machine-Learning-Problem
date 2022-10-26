@@ -1542,7 +1542,7 @@ We can change the folds and model by changing the commands as:
 
 In this way we can put any model in model_dispatcher like RandomForestClassifier, LogisticRegression etc. and train our models by passing arguments in any terminal.
 
-<a>
+<a name = "chapter6">
 <h1>Chapter 6 - Approaching Categorical Variables</h1>
 </a>
 
@@ -1716,7 +1716,7 @@ Suppose we represent each category of the ord_2 variable by a vector. This vecto
 
 And it looks like this:
 
-![Alt text](./one_hot_encode.jpeg?web=raw "one hot encode")
+![Alt text](./images/one_hot_encode.jpeg?web=raw "one hot encode")
 
 Each vector has a 1 and rest all other values are 0s.
 
