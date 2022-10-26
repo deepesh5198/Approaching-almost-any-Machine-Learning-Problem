@@ -10,6 +10,7 @@ As the name of the book suggests, this book is about how you can approach any ma
 - [Chapter 3 - Cross Validation](#chapter3)
 - [Chapter 4 - Evaluation Metrics](#chapter4)
 - [Chapter 5 - Arranging Machine Learning Projects](#chapter5)
+- [Chapter 6 - Approaching Categorical Variables](#chapter6)
 
 
 <a name = "chapter1">
@@ -1540,6 +1541,182 @@ We can change the folds and model by changing the commands as:
 ```
 
 In this way we can put any model in model_dispatcher like RandomForestClassifier, LogisticRegression etc. and train our models by passing arguments in any terminal.
+
+<a>
+<h1>Chapter 6 - Approaching Categorical Variables</h1>
+</a>
+
+In this chapter we will learn how to deal with **categorical variables** in the data.
+
+### What are Categorical Variables?
+A categorical variable is a variable (column/feature in a dataset) that has two or more than two but finite values, It contain a finite set of text values which needs to be converted to numerical values so later can be used to train a machine learning model.
+
+### Categorical Variables are of Two Types
+- **Nomial**:  Nomial variables are variables that have two or more categories which do not have any kind of order associated with them For example, if gender is classified into two groups, i.e. male and female, it can be considered as a nominal variable.
+
+- **Ordinal**: Ordinal variables on the other hand, have “levels” or categories with a particular order associated with them. For example, a variable named temperature can take; low, medium and high as values.
+
+- **Binary**: It is a categorical variable that takes exactly two values as categories, for example, a variable that takes Yes or No as values.
+
+- **Cyclic**: As the name says, Cyclic type of variables have values which are *cyclic*. for example, a variable that takes values of week days, Sun, Mon, Tue, Wed, Thu, Fri, Sat, and after Saturday we have Sunday again.
+
+### Dealing with Categorical Variables
+For this, let's learn with the famous *"cat-in-the-dat"* dataset. The dataset can be found [here](https://www.kaggle.com/competitions/cat-in-the-dat-ii/data).
+
+#### Exploring the data
+Let's have a look at the data -
+
+![Alt text](./images/cat_dat_dataset.png?web=raw "cat-in-the-dat")
+This is how the data looks.
+
+
+Let's see the data information.
+![Alt text](./images/cat_dat_info.png?web=raw "cat-in-the-dat info")
+As we can see in the image above, There are 23 categorical variables (excluding "id" and "target" columns). The data consist of all four types of categorical variables such as Nomial, Ordinal, Binary and Cyclic ("day" and "month" column).
+
+Overall, there are:
+- Five binary variables
+- Ten nominal variables
+- Six ordinal variables
+- Two cyclic variables
+- And a target variable
+
+Now, let's plot a count plot to see the distribution of data and to decide what evaluation metric we can use.
+
+Here is the countplot of the data:
+![Alt text](./images/cat_dat_countplot.png?web=raw "cat-in-the-dat countplot")
+As we can clearly see there is skewness in the data, that is the samples with target value "0" are more compared to "1". So, with the above analysis we can say we should avoid using Accuracy as the evaluation metric, we will use AUC score for this data.
+
+### Encoding the Categorical Variables
+As the data is full of categorical variables, we need to convert each variable to numerical type, and this process is called **Encoding**.
+
+### Label Encoding
+This is a very easy encoding technique. In this, we assign each category a numerical value. We can either do it manually or using scikit learn for this.
+
+#### Manual Label Encoding
+Given below is the code to manually perform the label encoding.
+```python
+    # encoding ord_2 column in the data
+    # create a mapping
+    # map each categorical value a numerical value
+    mapping = {
+                'Freezing':0,
+                'Warm':1,
+                'Cold':2,
+                'Boiling Hot':3,
+                'Hot':4,
+                'Lava Hot':5, 
+                }
+
+    df["ord_2"] = df.ord_2.map(mapping)
+
+```
+
+Value counts before mapping:
+```
+    df.ord_2.value_counts()
+    Freezing        142726
+    Warm            124239
+    Cold            97822
+    Boiling Hot     84790
+    Hot             67508
+    Lava Hot        64840
+    Name: ord_2, dtype: int64
+```
+
+Value counts after mapping:
+```
+    0.0     142726
+    1.0     124239
+    2.0     97822
+    3.0     84790
+    4.0     67508
+    5.0     64840
+    Name: ord_2, dtype: int64
+```
+#### Using LabelEncoder from Scikit-learn
+```python
+    import pandas as pd
+    from sklearn import preprocessing
+
+    # read the data
+    df = pd.read_csv("../input/cat_train.csv")
+
+    # fill NaN values in ord_2 column
+    df.loc[:, "ord_2"] = df.ord_2.fillna("NONE")
+    
+    # initialize LabelEncoder
+    lbl_enc = preprocessing.LabelEncoder()
+    
+    # fit label encoder and transform values on ord_2 column
+    # P.S: do not use this directly. fit first, then transform
+    df.["ord_2"] = lbl_enc.fit_transform(df.ord_2.values)
+```
+NOTE: You will see that we used "fillna" from pandas. The reason is LabelEncoder from scikit-learn does not handle NaN values, and ord_2 column has NaN values in it.
+
+Now, that we have label encoded our columns using LabelEncoder(), we can directly train any tree-based model using this data such as, Decision Tree, Random Forest or XGboost etc. but we cannot train any linear model directly with this data, for that the data needs to be **normalized** (or **standardized**).
+
+For training linear models such as, Logistic Regression or SVM etc. We can binarize the data:
+
+```
+    Freezing    --> 0 -->   0 0 0
+    Warm        --> 1 -->   0 0 1
+    Cold        --> 2 -->   0 1 0
+    Boiling Hot --> 3 -->   0 1 1
+    Hot         --> 4 -->   1 0 0
+    Lava Hot    --> 5 -->   1 0 1
+```
+To binarize the data, simply convert the categorical values to numerical and then convert these numerical values to their binary representation.
+
+#### But... Binarizing the data takes a lot of memory.
+To reduce the memory consumption, we can store the data in **sparse format**. In a sparse format we only keep the values that matter. In case of binary variables described above, all that matters is where we have "1s".
+
+To understand how sparse representation works, suppose we have three features as shown in figure below:
+![Alt text](./images/binary_repr.jpeg?web=raw "three features")
+
+We convert this data to binary representation, and it looks like this:
+![Alt text](./images/binary_repr2.jpeg?web=raw "binary representation")
+
+Now let's turn this into sparse format, to represent this matrix only with ones create a dictionary in which keys are indices of rows and columns and value is 1:
+```
+    (0, 2)  1
+    (1, 0)  1
+    (2, 0)  1
+    (2, 2)  1
+```
+The above format is sparse format which takes much less memory than binary representation of data. Any numpy array can be converted to a sparse matrix by simple python code.
+
+```python
+    # converting a numpy array into
+    # a sparse matrix
+    import numpy as np
+    from scipy import sparse
+    # create our example feature matrix
+    example = np.array(
+    [
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 1]
+    ]
+    )
+    # convert numpy array to sparse CSR matrix
+    sparse_example = sparse.csr_matrix(example)
+```
+
+### One Hot Encoding
+One Hot Encoding is another transformation technique for categorical variables that takes even less memory than sparse format. One hot encoding is a binary encoding too in the sense that there are only two values, 0s and 1s. However, it’s not a binary representation.
+
+Suppose we represent each category of the ord_2 variable by a vector. This vector is of the same size as the number of categories in the ord_2 variable. Each vector is of size six and has all zeros except at one position.
+
+And it looks like this:
+![Alt text](./one_hot_encode.jpeg?web=raw "one hot encode")
+Each vector has a 1 and rest all other values are 0s.
+
+Let't One-hot-encode the following data:
+![Alt text](./images/binary_repr.jpeg?web=raw "three features")
+
+After one-hot-encoding:
+![Alt text](./images/one_hot_encode2.jpeg?web=raw "one hot encoded features")
 
 
 
