@@ -1551,7 +1551,7 @@ In this chapter we will learn how to deal with **categorical variables** in the 
 ### What are Categorical Variables?
 A categorical variable is a variable (column/feature in a dataset) that has two or more than two but finite values, It contain a finite set of text values which needs to be converted to numerical values so later can be used to train a machine learning model.
 
-### Categorical Variables are of Two Types
+### Categorical Variables are of Following Types
 - **Nomial**:  Nomial variables are variables that have two or more categories which do not have any kind of order associated with them For example, if gender is classified into two groups, i.e. male and female, it can be considered as a nominal variable.
 
 - **Ordinal**: Ordinal variables on the other hand, have “levels” or categories with a particular order associated with them. For example, a variable named temperature can take; low, medium and high as values.
@@ -1616,7 +1616,7 @@ Given below is the code to manually perform the label encoding.
 ```
 
 Value counts before mapping:
-```
+```python
     df.ord_2.value_counts()
     Freezing        142726
     Warm            124239
@@ -1628,7 +1628,7 @@ Value counts before mapping:
 ```
 
 Value counts after mapping:
-```
+```python
     0.0     142726
     1.0     124239
     2.0     97822
@@ -1661,7 +1661,7 @@ Now, that we have label encoded our columns using LabelEncoder(), we can directl
 
 For training linear models such as, Logistic Regression or SVM etc. We can binarize the data:
 
-```
+```python
     Freezing    --> 0 -->   0 0 0
     Warm        --> 1 -->   0 0 1
     Cold        --> 2 -->   0 1 0
@@ -1684,7 +1684,7 @@ We convert this data to binary representation, and it looks like this:
 ![Alt text](./images/binary_repr2.jpeg?web=raw "binary representation")
 
 Now let's turn this into sparse format, to represent this matrix only with ones create a dictionary in which keys are indices of rows and columns and value is 1:
-```
+```python
     (0, 2)  1
     (1, 0)  1
     (2, 0)  1
@@ -1727,7 +1727,176 @@ Let't One-hot-encode the following data:
 After one-hot-encoding:
 ![Alt text](./images/one_hot_encode2.jpeg?web=raw "one hot encoded features")
 
+#### Code for One-hot-encoding
+The code below gives the dense one-hot-encoded data
+```python
+    #code for One-hot-encoding
+    import numpy as np
+    from sklearn import preprocessing
+
+    # create random 1-d array with 1001 different categories (int)
+    example = np.random.randint(1000, size=1000000)
+
+    # initialize OneHotEncoder from scikit-learn
+    # keep sparse = False to get dense array
+    ohe = preprocessing.OneHotEncoder(sparse=False)
+
+    # fit and transform data with dense one hot encoder
+    ohe_example = ohe.fit_transform(example.reshape(-1, 1))
+
+    # print size in bytes for dense array
+    print(f"Size of dense array: {ohe_example.nbytes}")
+
+```
+
+To get the sparse data, set the "sparse" parameter as True:
+```python
+    # keep sparse = True to get sparse array
+    ohe = preprocessing.OneHotEncoder(sparse=True)
+
+    # fit and transform data with sparse one-hot encoder
+    ohe_example = ohe.fit_transform(example.reshape(-1, 1))
+
+    # print size of this sparse matrix
+    print(f"Size of sparse array: {ohe_example.data.nbytes}")
+```
+
+Following is the output of the above code
+```python
+Size of dense array: 8000000000
+Size of sparse array: 8000000
+```
+We can see the difference, Dense array size is 8GB and on the other hand the size of sparse array is just 8MB.
 
 
+### Another Method to convert Categorical columns to Numerical
+In this method, we replace the category with its respective count in data, i.e., count of samples where the particular category exists.
+
+We do this as follows:
+```python
+    # this code will give the count
+    # of samples for each category
+    df.groupby(["ord_2"])["id"].count()
+```
+
+Output of the above code is:
+```python
+    ord_2
+    Boiling Hot     84790
+    Cold            97822
+    Freezing        142726
+    Hot             67508
+    Lava Hot        64840
+    Warm            124239
+    Name: id, dtype: int64
+```
+
+To replace the categories with their respective sample count, simply use *"transform"* function of pandas along with groupby:
+```python
+    df.groupby(["ord_2"])["id"].transform("count")
+```
+Output of the above code is:
+```python
+0       67508.0
+1       124239.0
+2       142726.0
+3       64840.0
+4       97822.0
+ ...
+599995  142726.0
+599996  84790.0
+599997  142726.0
+599998  124239.0
+599999  84790.0
+Name: id, Length: 600000, dtype: float64
+```
+
+### Creating New Features from Existing Categorical Variables
+We can get a new categorical feature by combining two or more category names in the same row. This is done as follows:
+
+```python
+ df["new_feature"] = (
+                        df.ord_1.astype(str)+ "_"
+                        + df.ord_2.astype(str)+ "_"
+                        + df.ord_3.astype(str))
+ ```
+The output of the above code is :
+```python
+0               Contributor_Hot_c
+1               Grandmaster_Warm_e
+2               nan_Freezing_n
+3               Novice_Lava Hot_a
+4               Grandmaster_Cold_h
+ ...
+599995          Novice_Freezing_a
+599996          Novice_Boiling Hot_n
+599997          Contributor_Freezing_n
+599998          Master_Warm_m
+599999          Contributor_Boiling Hot_b
+Name: new_feature, Length: 600000, dtype: object
+```
+### Summary
+Whenever you get categorical variables, follow these simple steps:
+- fill the NaN values (this is very important!)
+- convert them to integers by applying label encoding using LabelEncoder of scikit-learn or by using a mapping dictionary. If you didn’t fill up NaN values with something, you might have to take care of them in this step.
+- create one-hot encoding. Yes, you can skip binarization!
+- go for modelling
 
 
+### Handling NaN values
+Handling NaN data in categorical features is quite essential, we cannot simply just drop data with NaN values. If number of NaN values is just a few, we can drop them. But still it is not advisable. Because, dropping entire row because in one column there is NaN will result in data loss.
+
+In case of numerical columns we can simpy just fill the NaN values with Mean, Mode or Median values. But in case of categorical columns the NaN values are dealt with differently.
+
+In case of categorical variables, we can treat the NaN values as a completely new category, and this is the most preferred way to handle NaN values.
+
+#### Let's check Null/NaN values
+```python
+    # code to check count of null values
+    # in each column
+    df.isna().sum()
+```
+
+The output is as follows:
+```
+    id            0
+    bin_0     17894
+    bin_1     18003
+    bin_2     17930
+    bin_3     18014
+    bin_4     18047
+    nom_0     18252
+    nom_1     18156
+    nom_2     18035
+    nom_3     18121
+    nom_4     18035
+    nom_5     17778
+    nom_6     18131
+    nom_7     18003
+    nom_8     17755
+    nom_9     18073
+    ord_0     18288
+    ord_1     18041
+    ord_2     18075
+    ord_3     17916
+    ord_4     17930
+    ord_5     17713
+    day       17952
+    month     17988
+    target        0
+    dtype: int64
+```
+There are significant NaN data!
+
+Let's see the code to convert these NaN values to a "NONE" category.
+```python
+    # code to convert NaN values
+    # to "NONE" category
+    df.fillna("NONE")
+```
+
+The output of the above code gives the following data:
+
+![Alt text](./images/data_with_none.png?web=raw "NONE data")
+
+You can see "NONE" in some cells of the table above, that means we have successfully changed NaN to "NONE"
