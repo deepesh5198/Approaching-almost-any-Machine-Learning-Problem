@@ -1242,7 +1242,7 @@ Formula for R-Squared:
         return r_sq_error
 ```
 
-### SCIKIT-LEARN IMPLEMENTATION FOR ALL REGRESSION METRICS
+#### SCIKIT-LEARN IMPLEMENTATION FOR ALL REGRESSION METRICS
 ```python
     from sklearn import metrics
     # Mean Absolute Error (MAE)
