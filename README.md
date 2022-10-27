@@ -1900,3 +1900,319 @@ The output of the above code gives the following data:
 ![Alt text](./images/data_with_none.png?web=raw "NONE data")
 
 You can see "NONE" in some cells of the table above, that means we have successfully changed NaN to "NONE"
+
+### Dealing with Unknown Data During Live Prediction
+Now, if we count the "NONE"s in *ord_2* column we can see that each category have significant count.
+
+```python
+    # counting categories in ord_2
+    df.ord_2.value_counts()
+```
+Output:
+```python
+    Freezing    142726
+    Warm        124239
+    Cold         97822
+    Boiling Hot  84790
+    Hot          67508
+    Lava Hot     64840
+    NONE         18075
+    Name: ord_2, dtype: int64
+```
+Now, suppose if the **unknown** category were to come in this column during live, i.e., we get a category in *ord_2*
+column that is not present in train. In that case our model pipline would throw an error.
+
+Let's call this unknown category as "rare" category, a **rare category** is not seen very often i.e., the
+categories which appear only a small percentage of the total number of samples. 
+
+To handle this, we can make "NONE" as unknown, So, if during live testing, we get new categories that we have not seen before, we will mark them as "NONE".
+
+#### What if the column where the "unknown" will appear has no "NONE"?
+In that case, we can simply just make the categories with least count as "RARE", and if during live testing, we get new categories, we will mark them as "RARE".
+
+For better understanding, let's see the category count in *ord_4*.
+```python
+    # category count in ord_4
+    df.ord_4.value_counts()
+``` 
+We get following output:
+```
+    N       39978
+    P       37890
+    Y       36657
+    A       36633
+    R       33045
+    U       32897
+    .         .
+    .         .
+    .         .
+    K       21676
+    I       19805
+    NONE    17930
+    D       17284
+    F       16721
+    W        8268
+    Z        5790
+    S        4595
+    G        3404
+    V        3107
+    J        1950
+    L        1657
+    Name: ord_4, dtype: int64
+```
+
+Here, we can see that categories, "J" and "L" have count less than 2000. So, we can make the categories with count less than 2000 as "RARE".
+
+See the following code:
+```python
+    df.loc[df["ord_4"].value_counts()[df["ord_4"]].values < 2000, "ord_4"] = "RARE"
+```
+The output is as follows:
+```python
+    N       39978
+    P       37890
+    Y       36657
+    A       36633
+    R       33045
+    U       32897
+    M       32504
+    X       32347
+    C       32112
+    H       31189
+    Q       30145
+    T       29723
+    O       25610
+    B       25212
+    E       21871
+    K       21676
+    I       19805
+    NONE    17930
+    D       17284
+    F       16721
+    W        8268
+    Z        5790
+    S        4595
+    RARE     3607
+    G        3404
+    V        3107
+    Name: ord_4, dtype: int64
+```
+
+So, now, when it comes to test data, all the new, unseen categories will be mapped to "RARE", and all missing values will be mapped to "NONE". This approach will deal with the unknown categories during live prediction.
+
+### Cross Validation Step
+Since, we saw our data is highly skewed we cannot use simple KFold cross validation. So, we will use StratifiedKFold cross validation technique.
+
+Create a python script in "src/" folder, and name the script "create_folds.py":
+```python
+    # create_folds.py
+    import pandas as pd
+    from sklearn import model_selection
+
+
+    if __name__ == "__main__":
+        #reading training data
+        df = pd.read_csv("../input/train.csv")
+        
+        #we create new column kfold and fill it with -1
+        df["kfold"] = -1
+        
+        #randomize the rows of the data
+        df = df.sample(frac=1).reset_index(drop = True)
+        
+        #fetch labels (in numpy array)
+        y = df.target.values
+        
+        #initialize StratifiedKFold class from model_selection module
+        kf = model_selection.StratifiedKFold(n_splits = 5)    
+        #fill the new kfold column
+        for fold, (train, val) in enumerate(kf.split(X= df, y=y)):
+            df.loc[val, "kfold"] = fold
+            
+        #save the new csv with kfold column
+        df.to_csv("../input/cat_train_folds.csv", index = False)
+```
+The above code, will create a new data with "kfold" column in "input/" folder.
+
+Let's check the count of samples for each kfold:
+```python
+    import pandas as pd
+    df = pd.read_csv("../input/cat_train_folds.csv")
+    df.kfold.value_counts()
+```
+This will give us following output:
+```python
+    4       120000
+    3       120000
+    2       120000
+    1       120000
+    0       120000
+    Name: kfold, dtype: int64
+```
+We can see each kfold has equal number of samples in data.
+
+Now we can go ahead and train a model on this data. We will first train a LogisticRegression model with OneHotEncoding, because its a linear model. 
+
+#### Code for training Logistic Regression model
+```python
+    # one_hot_logres.py
+    import pandas as pd
+    from sklearn import linear_model
+    from sklearn import preprocessing
+    from sklearn import metrics
+
+    def run(fold:int = 0) -> float:
+        # load the df with kfolds
+        df= pd.read_csv("./input/cat_train_folds.csv")
+        
+        # all features except id, target, kfold
+        
+        features = [feature for feature in df.columns\
+                    if feature not in ["id", "target", "kfold"]]
+        
+        # fill all NaN values with NONE
+        # convert all columns to string because all
+        # are categorical type
+        
+        for col in features:
+            df.loc[:, col] = df[col].astype(str).fillna("NONE")
+            
+        # get training data using folds
+        df_train = df[df.kfold != fold].reset_index(drop = True)
+        
+        # get validation data using folds
+        df_valid = df[df.kfold == fold].reset_index(drop = True)
+        
+        # initialize OneHotEncoder class from preprocessing
+        # Using ONE HOT ENCODER because we are training a Linear Model
+        # NOTE:tree based models are okay with Categorical Data
+        # NOTE: tree based models need categorical data to be label encoded thats it
+        
+        # initializing OneHotEncoder object
+        ohe = preprocessing.OneHotEncoder()
+        
+        # fit ohe on training+validation features
+        full_data = pd.concat([df_train[features],\
+                                df_valid[features]], axis = 0)
+        
+        ohe.fit(full_data[features])
+        
+        # transform training data
+        X_train = ohe.transform(df_train[features])
+        
+        # transform validation data
+        X_valid = ohe.transform(df_valid[features])
+        
+        lr = linear_model.LogisticRegression()
+        
+        # fit lr model on training data
+        lr.fit(X_train, df_train.target.values)
+        
+        # predict on validation data
+        # we need the probability values as we are calculating AUC 
+        # we will use the probability of 1s
+        valid_preds = lr.predict_proba(X_valid)[:,1]
+        
+        # get roc AUC score
+        auc = metrics.roc_auc_score(df_valid.target.values, valid_preds)
+        
+        # print AUC
+        print("-"*80)
+        print("AUC score: ",auc)
+        
+        
+    if __name__ == "__main__":
+        fold = int(input("enter fold value: "))
+        run(fold)
+```
+
+When we run this code, we get following output:
+```
+    (approach_ml) C:\Users\deepe\machine_learning\cat-in-dat-project>src\one_hot_LogRes.py
+    enter fold value: 1
+    C:\Users\deepe\Environments\approach_ml\lib\site-packages\sklearn\linear_model\_logistic.py:444: ConvergenceWarning: lbfgs failed to converge (status=1):
+    STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+    Increase the number of iterations (max_iter) or scale the data as shown in:
+        https://scikit-learn.org/stable/modules/preprocessing.html
+    Please also refer to the documentation for alternative solver options:
+        https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+    n_iter_i = _check_optimize_result(
+    --------------------------------------------------------------------------------
+    AUC score:  0.7888090633698666
+```
+
+We get the AUC score of `0.7888090633698666`. We trained the simplest ML and got really good AUC score. Now, lets try training a Random Forest Classifier model with Label Encoding, because it is a tree based model.
+
+#### Code for training Random Forest Classifier:
+```python
+    import pandas as pd
+    from sklearn import ensemble
+    from sklearn import preprocessing
+    from sklearn import metrics
+
+    def run(fold):
+        
+        #load data with fold column
+        df = pd.read_csv("./input/cat_train_folds.csv")
+        
+        #all features except id, target, kfold
+        features = [feature for feature in df.columns\
+                    if feature not in ["id","target","kfold"]]
+        
+        #handling NaN values
+        for col in features:
+            df.loc[:,col] = df[col].astype(str).fillna("NONE")
+        
+        #Now its time for label encoding
+        #Using LABEL ENCODER because we are training a tree based model (Random Forest)
+        #NOTE:tree based models are okay with Categorical Data
+        #NOTE: tree based models need categorical data to be
+        # label encoded thats it
+        for col in features:
+            #initialize label encoder for each column
+            lbe = preprocessing.LabelEncoder()
+            
+            #fit label encoder on all data
+            lbe.fit(df[col])
+            
+            #transform all data
+            df.loc[:,col] = lbe.transform(df[col])
+            
+        #get training data using kfold
+        df_train = df[df.kfold != fold].reset_index(drop = True)
+        df_valid = df[df.kfold == fold].reset_index(drop = True)
+        
+        #get training data
+        X_train = df_train[features].values
+        
+        #get validation data
+        X_valid = df_valid[features].values
+
+        #initialize random forest model
+        rf = ensemble.RandomForestClassifier()
+        
+        #fit model on training data
+        rf.fit(X_train, df_train.target.values)
+        
+        #predict on validation data
+        # we need probability for calculating AUC
+        # we will use probablity of 1s
+        valid_preds = rf.predict_proba(X_valid)[:,1]
+        
+        #get roc AUC score
+        auc = metrics.roc_auc_score(df_valid.target.values, valid_preds)
+        
+        #print AUC score
+        print(f"FOLD = {fold}, AUC Score = {auc}")
+        
+    if __name__ == "__main__":
+        for fold in range(5):
+            run(fold)
+```
+We get the following output for this:
+```
+    FOLD = 0, AUC Score = 0.718634406266489
+```
+We can see the difference in the performance of both the models, and the simplest model like Logistic Regression performed fairly well, before it even converged! Also, it took very less time to train a Logistic Regression model compared to a Random Forest Model.
+
